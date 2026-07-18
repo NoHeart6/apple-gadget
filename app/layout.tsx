@@ -25,6 +25,30 @@ export const metadata: Metadata = {
   },
 };
 
+const imageFallbackScript = `
+(() => {
+  const brokenSources = new Set([
+    "https://www.apple.com/v/iphone/home/cj/images/overview/consider/designed-to_last__f60bwgep88ya_large.jpg",
+    "https://www.apple.com/v/iphone/home/cj/images/overview/consider/designed_to_last__f60bwgep88ya_large.jpg"
+  ]);
+  const replacement = "https://www.apple.com/newsroom/images/2024/09/apple-debuts-iphone-16-pro-and-iphone-16-pro-max/article/Apple-iPhone-16-Pro-hero-geo-240909_inline.jpg.large.jpg";
+
+  const repairImage = (image) => {
+    const source = image.getAttribute("src") || "";
+    if (brokenSources.has(source)) image.src = replacement;
+  };
+
+  window.addEventListener("error", (event) => {
+    const target = event.target;
+    if (target instanceof HTMLImageElement) repairImage(target);
+  }, true);
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("img").forEach(repairImage);
+  });
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -32,6 +56,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: imageFallbackScript }} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
